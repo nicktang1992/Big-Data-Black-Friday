@@ -12,10 +12,28 @@ BF[which(BF$Occupation == 1),]
 
 sapply(BF, mode)
 
-#cleaning data for clustering (replace them to numeric data and normalize using min-max)
+#mapping catagorical data columns and change them to numeric
 #1. gender
+BF['Gender'] <-mapvalues(BF$Gender, 
+          from=c("M","F"), 
+          to=c("1","0"))
+BF["Gender"]<-as.numeric(BF$Gender)
+
 #2. age 
+BF['Age'] <-mapvalues(BF$Age, 
+                      from=c("0-17","18-25","26-35","36-45","46-50","51-55","55+"), 
+                      to=c("0","1","2","3","4","5","6"))
+BF["Age"]<-as.numeric(BF$Age)
+
 #3. stay in current city
+BF['Stay_In_Current_City_Years'] <-mapvalues(BF$Stay_In_Current_City_Years, 
+                      from=c("4+"), 
+                      to=c("4"))
+BF["Stay_In_Current_City_Years"]<-as.numeric(BF$Stay_In_Current_City_Years)
+#check result
+summary(BF)
+sapply(BF, mode)
+
 
 #create subset of data rows by:
 #1. occupation
