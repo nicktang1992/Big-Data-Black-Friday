@@ -65,9 +65,9 @@ occupation_df[1]
 
 # Compute and plot wss for k 
 df1<-as.numeric(unlist(occupation_df[1]))
-k.max <- 50
-wss <- sapply(10:k.max,function(k){kmeans(df1, k, nstart=10,iter.max = 15 )$tot.withinss})
-plot(10:k.max, wss,type="b", pch = 19, frame = FALSE,xlab="Number of clusters K",ylab="Total within-clusters sum of squares")
+k.max <- 35
+wss <- sapply((1:k.max)*25,function(k){kmeans(df1, k, nstart=10,iter.max = 15 )$tot.withinss})
+plot((1:k.max)*20, log10(wss),type="b", pch = 19, frame = FALSE,xlab="Number of clusters K",ylab="Total within-clusters sum of squares")
 
 
 #2. gender
@@ -75,7 +75,7 @@ plot(10:k.max, wss,type="b", pch = 19, frame = FALSE,xlab="Number of clusters K"
 set.seed(123)
 # Compute and plot wss for k = 2 to k = 15.
 k.max <- 15
-wss <- sapply(1:k.max,function(k){kmeans(BF, k, nstart=50,iter.max = 15)$gender})
+wss <- sapply((1:k.max)*10,function(k){kmeans(BF, k, nstart=50,iter.max = 15)$gender})
 wss
 plot(1:k.max, wss,type="b", pch = 19, frame = FALSE,xlab="Number of clusters K",ylab="Total within-clusters sum of squares")
 
