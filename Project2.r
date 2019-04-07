@@ -72,10 +72,18 @@ plot(plotdf)
 
 #drop useless column 
 print(BF)
-BFTEST <- BF[, -c(2,6,9:11)]
+BFTEST <- BF[, -c(2,9:11)]
 print(BFTEST)
 #BF <- BF[, -c("Product_ID","City_Category","Product_Category_1","Product_Category_2","Product_Category_3")]
 
+#
+# split by city then drop city from BF test
+# do this first since we need to discard city category later
+summary(BFTEST)
+City_A_df = BFTEST[which(BFTEST$City_Category=='A'),]
+City_B_df = BFTEST[which(BFTEST$City_Category=='B'),]
+City_C_df = BFTEST[which(BFTEST$City_Category=='C'),]
+BFTEST <- BF[, -c(5)]
 
 
 #create subset of data rows by:
@@ -106,6 +114,7 @@ plotdf = current_df[sample(nrow(current_df), 100), -c(0,1,4)]
 summary(plotdf)
 plot(plotdf)
 
+#from k = 2 to 10, run k means clustering
 k.max <- 10
 wss <- sapply((2:k.max),function(k){kmeans(current_df[,-c(0,1,4,7)], k, nstart=20,iter.max = 20 )$tot.withinss})
 plot(2:k.max, wss,type="b", pch = 19, frame = FALSE,xlab="Number of clusters K",ylab="Total within-clusters sum of squares")
@@ -153,11 +162,14 @@ groups
 
 
 #2. gender
-#Elbow Method for finding the optimal number of clusters
-set.seed(123)
+male_df = BFTEST[which(BFTEST$Gender==1),]
+female_df = BFTEST[which(BFTEST$Gender==0),]
 
-
-#3. city
+#3. City
+#this split is already done in previous section
+City_A_df
+City_B_df  
+City_C_df 
 
 #for each subset of data, do:
 # plot attributes against each other
@@ -165,3 +177,125 @@ set.seed(123)
 # run k-means or k-nearest neighbors
 # run iclust to see the cluster plots and do some observations
 
+
+#
+#reload the data, processing without normalization,
+#split the data into training and test data on ratio of 50-50, 60-30, 70-30
+#
+
+BF <- read.csv("BlackFriday.csv")
+#mapping gender
+BF['Gender'] <-mapvalues(BF$Gender, 
+                         from=c("M","F"), 
+                         to=c("1","0"))
+BF["Gender"]<-as.numeric(BF$Gender)
+x <-BF["Gender"]
+BF["Gender"] <- {(x-min(x))/(max(x)-min(x))}
+
+#mapping age
+BF['Age'] <-mapvalues(BF$Age, 
+                      from=c("0-17","18-25","26-35","36-45","46-50","51-55","55+"), 
+                      to=c("0","1","2","3","4","5","6"))
+BF["Age"]<-as.numeric(BF$Age)
+#stay in city years
+BF['Stay_In_Current_City_Years'] <-mapvalues(BF$Stay_In_Current_City_Years, 
+                                             from=c("4+"), 
+                                             to=c("4"))
+BF["Stay_In_Current_City_Years"]<-as.numeric(BF$Stay_In_Current_City_Years)
+
+# drop columns
+BF = BF[, -c(2,5,6,9:11)]
+#index of the training data
+BF
+
+indeces1 = sample(nrow(BF), nrow(BF)*0.5)
+training_df1 = BF[indeces1,]
+testing_df1 = BF[-indeces1,]
+
+indeces2 = sample(nrow(BF), nrow(BF)*0.6)
+training_df2 = BF[indeces2,]
+testing_df2 = BF[-indeces2,]
+
+indeces3 = sample(nrow(BF), nrow(BF)*0.7)
+training_df3 = BF[indeces3,]
+testing_df3 = BF[-indeces3,]
+
+#nrow(training_df1)
+#nrow(testing_df1)
+#nrow(training_df2)
+#nrow(testing_df2)
+#nrow(training_df3)
+#nrow(testing_df3)
+
+#TO-DO: run LM and GLM on all three data sets
+
+#pairwise ports to observe data dependency
+plotdf = training_df1[sample(nrow(training_df1), 100),-c(1) ]
+#summary(plotdf)
+plot(plotdf)
+#
+#running lm on purchase
+#
+
+#gender, age and marital status on purchase
+#model building
+formula1_gen_age_ms_pur<-training_df1$Purchase ~ training_df1$Gender+training_df1$Age+training_df1$Marital_Status
+fit_purchase<-lm(formula = formula1_gen_age_ms_pur,data=training_df1)
+summary.lm(fit_purchase)
+
+plot(fit_purchase$fitted.values, fit_purchase$residuals)
+#prediction
+pred_purchase<-vector()
+pred_purchase$pred <- predict(fit_purchase, testing_df1)
+summary(pred_purchase$pred)
+
+pred_purchase$actuals_preds <- data.frame(cbind(actuals=testing_df1$Purchase, predicteds=pred_purchase$pred))
+pred_purchase$correlation <- cor(pred_purchase$actuals_preds)
+#correlation is incredibly low since low correlation in actual data
+
+#fit only age on purchase
+fit_age_purchase<-lm(formula = training_df1$Purchase ~ training_df1$Age,data=training_df1)
+plot(fit_age_purchase$fitted.values, fit_age_purchase$residuals)
+summary.lm(fit_age_purchase)
+
+pred_age_purchase<-vector()
+pred_age_purchase$pred <- predict(fit_age_purchase, testing_df1)
+pred_age_purchase$actuals_preds <- data.frame(cbind(age=testing_df1$Age, predicteds=(pred_age_purchase$pred - testing_df1$Purchase)))
+plot(pred_age_purchase$actuals_preds)
+
+# residual plot looks bad
+
+#
+#running glm on gender
+#
+
+#gender on purchase
+cor(training_df1)
+
+fit_purchase_gender<-glm(formula = training_df1$Gender~training_df1$Purchase, data =training_df1,family=binomial())
+plot(fit_purchase_gender$fitted.values, fit_purchase_gender$residuals)
+plot(fit_purchase_gender)
+#from here we can see the logit model does not fit well.
+#however, I am struggling find a variable that has significant coefficient with gender
+
+pred_purchase_gender<-vector()
+pred_purchase_gender$pred <- predict(fit_purchase_gender, testing_df1)
+
+#print prediction
+plotting_df <-data.frame(cbind(testing_df1$Purchase,pred_purchase_gender$pred))
+plot(plotting_df)
+
+#print residual plot
+plot(testing_df1$Purchase,pred_purchase_gender$pred - testing_df1$Gender)
+#does not looks good either
+
+
+#fit maritual status on age
+fit_m_age<-glm(formula = training_df1$Marital_Status~training_df1$Age, data =training_df1,family=binomial())
+plot(fit_m_age$fitted.values, fit_m_age$residuals)
+
+pred_m_age<-vector()
+pred_m_age$pred <- predict(fit_m_age, testing_df1)
+plotting_df <-data.frame(cbind(testing_df1$Age,pred_m_age$pred))
+plot(plotting_df)
+# not good. Am i not using glm correctly?
