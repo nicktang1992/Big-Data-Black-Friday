@@ -83,7 +83,7 @@ summary(BFTEST)
 City_A_df = BFTEST[which(BFTEST$City_Category=='A'),]
 City_B_df = BFTEST[which(BFTEST$City_Category=='B'),]
 City_C_df = BFTEST[which(BFTEST$City_Category=='C'),]
-BFTEST <- BF[, -c(5)]
+BFTEST <- BFTEST[, -c(5)]
 
 
 #create subset of data rows by:
