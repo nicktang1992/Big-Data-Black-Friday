@@ -268,7 +268,7 @@ current_df = age_m_a_df[[1]]
 
 #wholefunction
 #start
-plotdf = current_df[sample(nrow(current_df),100),-c(1,4)]
+plotdf = current_df[sample(nrow(current_df),100),-c(1,3,4,6)]
 summary(plotdf)
 plot(plotdf)
 k.max <- 10
@@ -320,9 +320,9 @@ plot(plotdf)
 #running lm on purchase
 #
 
-#gender, age and marital status on purchase
+#gender, and Occupation on purchase
 #model building
-formula1_gen_age_ms_pur<-training_df1$Purchase ~ training_df1$Gender+training_df1$Age+training_df1$Marital_Status
+formula1_gen_age_ms_pur<-training_df1$Purchase ~ training_df1$Gender+training_df1$Occupation
 fit_purchase<-lm(formula = formula1_gen_age_ms_pur,data=training_df1)
 summary.lm(fit_purchase)
 
@@ -336,8 +336,8 @@ pred_purchase$actuals_preds <- data.frame(cbind(actuals=testing_df1$Purchase, pr
 pred_purchase$correlation <- cor(pred_purchase$actuals_preds)
 #correlation is incredibly low since low correlation in actual data
 
-#fit only age on purchase
-fit_age_purchase<-lm(formula = training_df1$Purchase ~ training_df1$Age,data=training_df1)
+#fit only Occupation on purchase
+fit_age_purchase<-lm(formula = training_df1$Purchase ~ training_df1$Occupation,data=training_df1)
 plot(fit_age_purchase$fitted.values, fit_age_purchase$residuals)
 summary.lm(fit_age_purchase)
 
@@ -371,16 +371,6 @@ plot(plotting_df)
 #print residual plot
 plot(testing_df1$Purchase,pred_purchase_gender$pred - testing_df1$Gender)
 #does not looks good either
-
-
-#fit maritual status on age
-fit_m_age<-glm(formula = training_df1$Marital_Status~training_df1$Age, data =training_df1,family=binomial())
-plot(fit_m_age$fitted.values, fit_m_age$residuals)
-
-pred_m_age<-vector()
-pred_m_age$pred <- predict(fit_m_age, testing_df1)
-plotting_df <-data.frame(cbind(testing_df1$Age,pred_m_age$pred))
-plot(plotting_df)
 # subset B end.
 
 
