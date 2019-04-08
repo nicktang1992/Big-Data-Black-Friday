@@ -272,12 +272,13 @@ plotdf = current_df[sample(nrow(current_df),100),-c(1,4)]
 summary(plotdf)
 plot(plotdf)
 k.max <- 10
-wss=sapply((2:k.max),function(k){kmeans(current_df[,-c(1,4)],k,nstart = 20,iter.max = 20)$tot.withinss})
+wss=sapply((2:k.max),function(k){kmeans(current_df[,-c(1,4,7)],k,nstart = 20,iter.max = 20)$tot.withinss})
 plot(2:k.max, wss,type="b", pch = 19, frame = FALSE,xlab="Number of clusters K",ylab="Total within-clusters sum of squares")
 k.estimate = 4
-res <- kmeans(current_df[,-c(1,4)], k.estimate, nstart=20,iter.max = 20 )
-plotcols <- c(2,3,5,6)
+res <- kmeans(current_df[,-c(1,4,7)], k.estimate, nstart=20,iter.max = 20 )
+plotcols <- c(2,5,7)
 clusplot(current_df[,plotcols], res$cluster, main = 'Cusplot')
+
 indecestrain <- sample(nrow(current_df), nrow(current_df)*0.7)
 cols <-c(2,3,5,6,7)
 knnTraining<-current_df[indecestrain,cols]
