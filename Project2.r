@@ -145,6 +145,28 @@ kmres<-kmeans(knnTesting, k.estimate, nstart=20,iter.max = 20 )
 #evaluate knn
 CrossTable(x=kmres$cluster,y=knnres,prop.chisq = FALSE)
 #the result here is kind of good, every km and knn prediction goes to the same cluster. although the number of cluster is somehow not correct
+########
+##evaluate knn for all subset
+#nrow=9(k= 2:10),ncol=the number of your subset
+ac=matrix(nrow = 9,ncol = 5)
+for(i in 1:5){
+  #generate training and testing data
+  indecestrain=sample(nrow(occupation_df[[i]]),nrow(occupation_df[[i]])*0.7)
+  knnTraining=occupation_df[[i]][indecestrain,cols]
+  knnTesting=occupation_df[[i]][-indecestrain,cols]
+  #calculate knn vs kmeans from 2:10
+  for(kk in 1:9){
+    kmpred=kmeans(knnTraining,kk+1,nstart = 20,iter.max = 20)
+    knnres=knn(knnTraining,knnTesting,kmpred$cluster,kk+1)
+    kmres=kmeans(knnTesting,kk+1,nstart = 20,iter.max = 20)
+    #calculate the accurency between knn and kmeans
+    ac[kk,i]=sum(knnres==kmres$cluster)/nrow(knnTesting)
+  }
+}
+#output the table to csv
+write.csv(ac,file="Accurancy.csv",quote=F,row.names = F)
+
+
 
 #Hierarchical clustering
 #it requires too much space, sample rows 
