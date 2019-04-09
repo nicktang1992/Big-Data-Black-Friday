@@ -157,12 +157,14 @@ groups <- cutree(hres, k=5)
 groups
 
 #index of the training data
+
+current_df = occupation_df[[1]]
 current_df
 current_df[,-c(1,4)]
 
 indeces1 = sample(nrow(current_df[,-c(1,4)]), nrow(current_df[,-c(1,4)])*0.5)
 training_df1 = current_df[,-c(1,4)][indeces1,]
-testing_df1 = current_df[,-c(1,4)]F[-indeces1,]
+testing_df1 = current_df[,-c(1,4)][-indeces1,]
 
 indeces2 = sample(nrow(current_df[,-c(1,4)]), nrow(current_df[,-c(1,4)])*0.6)
 training_df2 = current_df[,-c(1,4)][indeces2,]
@@ -188,6 +190,7 @@ plot(plotdf)
 formula1_gen_age_ms_pur<-training_df1$Purchase ~ training_df1$Gender+training_df1$Age+training_df1$Marital_Status
 fit_purchase<-lm(formula = formula1_gen_age_ms_pur,data=training_df1)
 summary.lm(fit_purchase)
+mean(fit_purchase$residuals^2)
 
 plot(fit_purchase$fitted.values, fit_purchase$residuals)
 #prediction
